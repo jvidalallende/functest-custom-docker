@@ -1,15 +1,8 @@
 FROM opnfv/functest:latest
 
-MAINTAINER juanvidalallende@gmail.com
+MAINTAINER juan.vidal.allende@ericsson.com
 
-ENV DEPLOY_SCENARIO os-odl_l2-sfc-noha
-
-RUN apt-get update && apt-get install -y vim-nox ctags git-review python-jedi
-
-# Git configuration
-RUN git config --global user.name "Juan Vidal" \
-    && git config --global user.email "juan.vidal.allende@ericsson.com" \
-    && git config --global gerrit.user "JuanVidal"
+RUN apt-get update && apt-get install -y vim-nox ctags git-review python-flake8 python-jedi
 
 # Haste binary, stdout to haste to automatically upload text snippets
 RUN wget https://raw.githubusercontent.com/jvidalallende/Hastebin-client/master/haste.bash -O /bin/haste \
@@ -28,9 +21,21 @@ RUN mkdir /home/opnfv/GIT \
     && ln -s /home/opnfv/GIT/config-files/vim /home/opnfv/.vim \
     && ln -s /home/opnfv/GIT/config-files/tmux.conf /home/opnfv/.tmux.conf \
     && ln -s /home/opnfv/GIT/config-files/bash_aliases /home/opnfv/.bash_aliases \
+    && mv /home/opnfv/.gitconfig /home/opnfv/.gitconfig.bak \
+    && ln -s /home/opnfv/GIT/config-files/gitconfig /home/opnfv/.gitconfig\
+    && ln -s /home/opnfv/GIT/config-files/gitignore_global /home/opnfv/.gitignore_global\
     && echo '. /home/opnfv/GIT/config-files/bashrc' >> /home/opnfv/.bashrc \
     && echo '. /home/opnfv/.bashrc' >> /home/opnfv/.bash_profile \
-    && ssh-keygen -trsa -f /root/.ssh/id_rsa -N '' \
+
+# Git configuration
+# http.sslverify is a default in functest container, so do not override it
+RUN git config --global user.name "Juan Vidal" \
+    && git config --global user.email "juan.vidal.allende@ericsson.com" \
+    && git config --global gerrit.user "JuanVidal" \
+    && git config --global http.sslverify false
+
+# Generate SSH Keys
+RUN ssh-keygen -trsa -f /root/.ssh/id_rsa -N '' \
     && echo "" \
     && echo "Your public SSH key is:" \
     && echo "=========================================================" \
